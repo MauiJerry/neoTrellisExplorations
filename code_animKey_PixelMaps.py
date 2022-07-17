@@ -34,9 +34,8 @@ from adafruit_led_animation.animation.colorcycle import ColorCycle
 from adafruit_led_animation.animation.rainbow import Rainbow
 from adafruit_led_animation.animation.customcolorchase import CustomColorChase
 from adafruit_led_animation.sequence import AnimationSequence
-#from adafruit_led_animation.color import PURPLE, WHITE, AMBER, JADE, MAGENTA, ORANGE, BLACK
-import adafruit_led_animation.color as Color
 from adafruit_led_animation import helper
+import adafruit_led_animation.color as Color
 
 # not sure why but mu editor/cp keeps doing a reload/soft reboot unless we do this
 # so then we have to use Ctrl-D to reload with Mu editor
@@ -44,13 +43,14 @@ import supervisor
 supervisor.disable_autoreload()
 print("autoreload disabled")
 
-## begin onboard pixel -----------------------------------------------
+## begin with onboard neoPixel if supported
 # setup the onboard neopixel
 # #### from neoPixel - bottom of M4  pixel
 BLINK_COLOR = (100, 50, 150)  # color to blink
 DELAY = 0.25  # blink rate in seconds
 
-# Create the NeoPixel object
+# Create the NeoPixel object, check if processor board supports it
+# note this will be real, regular NeoPixel strip of length 1
 onBoardPixel = None
 if 'NEOPIXEL' in dir(board):
     onBoardPixel = neopixel.NeoPixel( board.NEOPIXEL, 1, pixel_order=neopixel.GRB)
@@ -58,10 +58,10 @@ if 'NEOPIXEL' in dir(board):
 else:
     print("Board does NOT have onboard NEOPIXEL")
 
-def blinkOnBoardPixel():
+def blinkOnBoardPixel(color=BLINK_COLOR):
     global onBoardPixel
     if onBoardPixel:
-        onBoardPixel.fill(BLINK_COLOR)
+        onBoardPixel.fill(color)
         onBoardPixel.show()
         time.sleep(DELAY)
         onBoardPixel[0] = Color.BLACK
@@ -70,7 +70,7 @@ def blinkOnBoardPixel():
     else:
         print("No onBoardPixel to blink")
 
-
+# blink it once to show we here
 blinkOnBoardPixel()
 
 onboardStatus = False
@@ -97,7 +97,7 @@ trellis = NeoTrellis(i2c_bus)
 # with 'fixed' branch of seesaw.neopixel, this will work
 # see https://github.com/adafruit/Adafruit_CircuitPython_seesaw/pull/106
 # Note these will be seesaw.neopixel, not regular neopixel
-# we have Color.BLACK as well as the other color names (and colorwheel)
+# we have Color.BLACK as well as the other color names (and colorwheel() )
 
 trellis.pixels.fill(Color.WHITE)
 #trellis.pixels.fill(Color.BLACK)
@@ -138,7 +138,8 @@ rainbow_comet = RainbowComet(trellis.pixels, speed=0.1, tail_length=16, bounce=T
 rainbow_chase = RainbowChase(trellis.pixels, speed=0.1, size=3, spacing=2, step=8)
 rainbow_sparkle = RainbowSparkle(trellis.pixels, speed=0.1, num_sparkles=4)
 custom_color_chase = CustomColorChase(
-    trellis.pixels, speed=0.1, size=2, spacing=3, colors=[Color.ORANGE, Color.WHITE, Color.JADE]
+    trellis.pixels, speed=0.1, size=2, spacing=3,
+    colors=[Color.ORANGE, Color.WHITE, Color.JADE]
 )
 
 # thats only 13 built in!  need 16 to have one each key
@@ -150,26 +151,41 @@ allRed= Solid(trellis.pixels, color=Color.RED)
 allBlue = Solid(trellis.pixels, color=Color.BLUE)
 allGold = Solid(trellis.pixels, color=Color.GOLD)
 
-current_animation = allGray
-#ToDO: create some row/colunm animationss with PixelMaps
+# create some pixelMaps for rows and columns
+trellis_pixel_columns = helper.PixelMap.vertical_lines(
+    trellis.pixels, 4, 4, helper.horizontal_strip_gridmap(4, alternating=False)
+)
+trellis_pixel_rows = helper.PixelMap.horizontal_lines(
+    trellis.pixels, 4, 4, helper.horizontal_strip_gridmap(4, alternating=False)
+)
 
+# and build some animations using PixelMaps (from example, mod for size)
+comet_h = Comet(trellis_pixel_rows, speed=0.1, color=Color.PURPLE, tail_length=3, bounce=True)
+comet_v = Comet(trellis_pixel_columns, speed=0.1, color=Color.AMBER, tail_length=6, bounce=True)
+chase_h = Chase(trellis_pixel_rows, speed=0.1, size=3, spacing=6, color=Color.JADE)
+rainbow_chase_v = RainbowChase(trellis_pixel_columns, speed=0.1, size=3, spacing=2, step=8)
+rainbow_comet_v = RainbowComet(trellis_pixel_columns, speed=0.1, tail_length=7, bounce=True)
+rainbow_v = Rainbow(trellis_pixel_columns, speed=0.1, period=2)
+rainbow_chase_h = RainbowChase(trellis_pixel_rows, speed=0.1, size=3, spacing=3)
+
+current_animation = allGray
+
+# -------- Key Pad Handling ---------
 # arrays to map key index to animation and colors
 keyColors = rainbowPalette
 keyAnimations = [
     blink, color_cycle, comet, chase,
     pulse, sparkle, solid, rainbow,
     sparkle_pulse, rainbow_comet, rainbow_chase, rainbow_sparkle,
-    custom_color_chase, allRed, allBlue, allGold
+    custom_color_chase, rainbow_chase_v, rainbow_chase_h, rainbow_comet_v
 ]
 
-# -------- Key Handling ---------
-
-# this will be called when button events are received
+# doKey() will be called when button events are received
 def doKey(event):
     global current_animation
     print("\nKeyEvent: ", str(event), " event number",event.number, " edge:",event.edge)
     if event.edge == NeoTrellis.EDGE_RISING:
-        # pressed: toggle, stop, color my pixel, set current animation
+        # pressed: toggle, stop/freeze current animation, color my pixel
         onBoardPixel[0] = keyColors[event.number]
         #toggleOnBoardPixel()
         # stop current animation
@@ -178,10 +194,10 @@ def doKey(event):
         trellis.pixels[event.number] = keyColors[event.number]
         print("pixel color", hex(keyColors[event.number]))
         trellis.pixels.show()
-        blinkOnBoardPixel()
+        blinkOnBoardPixel(keyColors[event.number])
         #current_animation = keyAnimations[event.number]
 
-    # turn the LED off when a falling edge is detected
+    # start animationwhen a falling edge is detected
     elif event.edge == NeoTrellis.EDGE_FALLING:
         #toggleOnBoardPixel()
         onBoardPixel[0] = Color.BLACK

@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# my personal way to hide old code
+archive/
+
 # Distribution / packaging
 .Python
 build/
@@ -14,6 +17,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+# keep lib for now, it holds special version of seesaw lib
 #lib/
 lib64/
 parts/
