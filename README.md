@@ -4,16 +4,23 @@
  more extensive documentation on hackaday.io:
    https://hackaday.io/project/186327-neotrellis-explorations
 
-code_ files are intended to run as code.py on CircuitPython device.
-
 Adafruit NeoTrellis PCB
-	(url)
+	Adafruit NeoTrellis RGB Driver PCB for 4x4 Keypad
+	https://www.adafruit.com/product/3954
   4x4 array of elastomer buttons plus RGB Led on i2c
   some examples online with adafruit but a bit thin
   kit including Feather M4, Button Pad, acrylic case
-	(url)
+	Adafruit 4x4 NeoTrellis Feather M4 Kit Pack
+	https://www.adafruit.com/product/4352
 	
-Getting animations to run on the NeoTrellis turned out to be a bit difficult. 
+Getting animations to run on the NeoTrellis turned out to be a bit difficult. The current release of adafruit_seesaw libary has its own version of NeoPixel class that does Not derive from PixelBuf, as do other versions. This precludes use of the rather nice adafruit_led_animations library.
+Neradoc on Adafruit's Discord quickly built a branch of seesaw that does derive from PixelBuf.  There isnt much testing yet but its a great advancement.
+
+TODO: refactoring code to module files
+
+
+
+examples/code_ files are intended to run as code.py on CircuitPython device.
 
 code_neotrellis_example_m4.py: 
 	basic adafruit.neotrellis.example with mods to run a Feather M4. 
