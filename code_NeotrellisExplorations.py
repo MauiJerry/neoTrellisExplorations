@@ -16,8 +16,6 @@ OnBoardNeopixel toggles on each press and each release
 # so then we have to use Ctrl-D to reload with Mu editor
 import supervisor
 
-import NeoTrellisExplorations.neotrellis_keypad
-
 supervisor.disable_autoreload()
 print("autoreload disabled")
 
@@ -42,7 +40,7 @@ trellis = NeoTrellis(i2c_bus)
 
 # setup animation and keypad modules
 neotrellis_animations.setup_animations(trellis)
-neotrellis_keypad.setup_keypad()
+neotrellis_keypad.setup_keypad(trellis)
 
 print("Setup Complete enter forever loop ", neotrellis_animations.current_animation)
 
