@@ -1,6 +1,7 @@
 # neotrellis_animations.py
 """
 this module encapsulates some example code to drive adafruit_led_animations on a NeoTrellis
+most of it was ripped off from adafruit_led_animations.examples.led_animation_all_animations
 Note pixels will be seesaw.neopixel, not regular neopixel
 A 'fixed' version of seesaw.neopixel is requried from a branch
 that derives seesaw.neopixel from PixelBuf (neopixel strip)
@@ -32,8 +33,8 @@ __allBlack = None
 __trellis_pixel_columns = None
 __trellis_pixel_rows = None
 
-    # we have Color.BLACK as well as the other color names (and colorwheel() )
-# we need a 16 color palette that does NOT contain black - one each button
+# we have Color.BLACK as well as the other color names (and colorwheel() ) from led_animations
+# we need a 16 color palette that does NOT contain black - one for each button in keypad
 rainbowPalette = [
     0xa0002, 0x80004, 0x50007, 0x30009,
     0xb, 0x10b, 0x308, 0x606,
@@ -49,12 +50,13 @@ def print_rainbowPalette():
     print()
 
 def show_rainbowPalette():
+    global __trellis_pixels
     print_rainbowPalette()
     print("RainbowPalete blinking on board pixel")
     for clr in rainbowPalette:
         print("clr ", hex(clr))
         BLINK_COLOR = clr
-        trellis.pixels.fill(clr)
+        __trellis_pixels.fill(clr)
         blinkOnBoardPixel()
 
 # define some module variables
@@ -115,8 +117,7 @@ def setup_animations(neotrellis):
     rainbow_chase_h = RainbowChase(__trellis_pixel_rows, speed=0.1, size=3, spacing=3)
     rainbow_comet_v = RainbowComet(__trellis_pixel_columns, speed=0.1, tail_length=7, bounce=True)
 
-    global current_animation
-    current_animation = allGray
+    # build an array of all those animation, first 16 will be tied to keypad actions later
     global trellisAnimations
     trellisAnimations = [
         # first 16 will match to key pad index 0-15
@@ -128,6 +129,10 @@ def setup_animations(neotrellis):
         allWhite, allBlack, allRed, allBlue, allGold, allOrange, allGray,
         chase_h, comet_v, rainbow_v,
     ]
+
+    # start with simple solid Gray animation
+    global current_animation
+    current_animation = allGray
 
     print ("animations setup current_animation: ", current_animation)
 

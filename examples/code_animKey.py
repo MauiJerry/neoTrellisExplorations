@@ -51,15 +51,15 @@ BLINK_COLOR = (100, 50, 150)  # color to blink
 DELAY = 0.25  # blink rate in seconds
 
 # Create the NeoPixel object
-onBoardPixel = None
+on_board_neopixel = None
 if 'NEOPIXEL' in dir(board):
-    onBoardPixel = neopixel.NeoPixel( board.NEOPIXEL, 1, pixel_order=neopixel.GRB)
-    print("Board have onboard NEOPIXEL", onBoardPixel)
+    on_board_neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, pixel_order=neopixel.GRB)
+    print("Board have onboard NEOPIXEL", on_board_neopixel)
 else:
     print("Board does NOT have onboard NEOPIXEL")
 
 def blinkOnBoardPixel():
-    global onBoardPixel
+    global on_board_neopixel
     if onBoardPixel:
         onBoardPixel.fill(BLINK_COLOR)
         onBoardPixel.show()
@@ -76,12 +76,12 @@ blinkOnBoardPixel()
 __onboardStatus = False
 def toggleOnBoardPixel():
     global __onboardStatus
-    if onBoardPixel:
+    if on_board_neopixel:
         if onboardStatus:
-            onBoardPixel.fill(Color.BLACK)
+            on_board_neopixel.fill(Color.BLACK)
             onboardStatus = False
         else:
-            onBoardPixel.fill(BLINK_COLOR)
+            on_board_neopixel.fill(BLINK_COLOR)
             onboardStatus = True
 
 # end onboard pixel ----------------------------------------------
@@ -170,7 +170,7 @@ def doKey(event):
     print("\nKeyEvent: ", str(event), " event number",event.number, " edge:",event.edge)
     if event.edge == NeoTrellis.EDGE_RISING:
         # pressed: toggle, stop, color my pixel, set current animation
-        onBoardPixel[0] = keyColors[event.number]
+        on_board_neopixel[0] = keyColors[event.number]
         #toggleOnBoardPixel()
         # stop current animation
         current_animation.freeze()
@@ -184,7 +184,7 @@ def doKey(event):
     # turn the LED off when a falling edge is detected
     elif event.edge == NeoTrellis.EDGE_FALLING:
         #toggleOnBoardPixel()
-        onBoardPixel[0] = Color.BLACK
+        on_board_neopixel[0] = Color.BLACK
         trellis.pixels.fill(Color.BLACK)
         #trellis.pixels[event.number] = Color.BLACK
         current_animation = keyAnimations[event.number]

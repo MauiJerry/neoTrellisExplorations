@@ -15,6 +15,7 @@ OnBoardNeopixel toggles on each press and each release
 # not sure why but mu editor/cp keeps doing a reload/soft reboot unless we do this
 # so then we have to use Ctrl-D to reload with Mu editor
 import supervisor
+
 supervisor.disable_autoreload()
 print("autoreload disabled")
 
@@ -22,77 +23,32 @@ import time
 import board
 import busio
 from adafruit_neotrellis.neotrellis import NeoTrellis
-import adafruit_led_animation.color as Color
 
 # local modules
+import onboard_neopixel
 import neotrellis_animations
-from onboard_neopixel import onBoardPixel, blinkOnBoardPixel, toggleOnBoardPixel
+import neotrellis_keypad
 
-# begin neoTrellis -----------------------------------------------
+# setup single pixel strip if board has it, blink it once
+onboard_neopixel.setup_onboard_neopixel()
+
 # create the i2c object for the trellis
 # note the use of busio.I2C() instead of board.I2C()
 # apparently this is an issue for M4 (rPi Pico too?)
 i2c_bus = busio.I2C(board.SCL, board.SDA)
-
 trellis = NeoTrellis(i2c_bus)
 
-# setup neopixel stuff first
+# setup animation and keypad modules
 neotrellis_animations.setup_animations(trellis)
+neotrellis_keypad.setup_keypad(trellis)
 
-# -------- Key Pad Handling ---------
-# could be module but short enough for inline
-# arrays to map key index to animation and colors
-keyColors = neotrellis_animations.rainbowPalette
-keyAnimations = neotrellis_animations.trellisAnimations
-
-# doKey() will be called when button events are received
-def doKey(event):
-    print("\nKeyEvent: ", str(event), " event number",event.number, " edge:",event.edge)
-    if event.edge == NeoTrellis.EDGE_RISING:
-        # pressed: toggle, stop/freeze current animation, color my pixel
-        onBoardPixel[0] = keyColors[event.number]
-        #toggleOnBoardPixel()
-        # stop current animation, set all to black
-        trellis.pixels.fill(Color.BLACK)
-        neotrellis_animations.freeze()
-        neotrellis_animations.set_all_black_animation()
-        neotrellis_animations.resume()
-        trellis.pixels[event.number] = keyColors[event.number]
-        print("pixel color", hex(keyColors[event.number]))
-        trellis.pixels.show()
-        blinkOnBoardPixel(keyColors[event.number])
-
-    # start animationwhen a falling edge is detected
-    elif event.edge == NeoTrellis.EDGE_FALLING:
-        #toggleOnBoardPixel()
-        onBoardPixel[0] = Color.BLACK
-        trellis.pixels.fill(Color.BLACK)
-        #trellis.pixels[event.number] = Color.BLACK
-        neotrellis_animations.set_animation_byIndex(event.number)
-        neotrellis_animations.current_animation.resume()
-        print("new animation", neotrellis_animations.current_animation)
-
-# associate 16 trellis keys with doKey() for both press and release
-for i in range(16):
-    # activate rising edge events on all keys; key pressed
-    trellis.activate_key(i, NeoTrellis.EDGE_RISING)
-    # activate falling edge events on all keys; key released
-    trellis.activate_key(i, NeoTrellis.EDGE_FALLING)
-    # set all keys to trigger the doKey() callback
-    trellis.callbacks[i] = doKey
-
-# --------------- Ready for Main Loop ------------
-# but first lets print out the key colors
-print("key colors", keyColors)
-for clr in keyColors:
-    print(hex(clr),end=", ")
-print("")
-print("Setup Complete enter loop ", neotrellis_animations.current_animation)
+print("Setup Complete enter forever loop ", neotrellis_animations.current_animation)
 
 i = 0
 while True:
+    # tell animation to update
     neotrellis_animations.current_animation.animate()
-    # call the sync function call any triggered callbacks, after the animate()
+    # call the sync function call any triggered callbacks
     trellis.sync()
     # the trellis can only be read every 17 milliseconds or so
     # really? the neopixel _getItem() could be an issue for i2c/seesaw connected neopixels
