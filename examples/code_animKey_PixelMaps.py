@@ -73,9 +73,9 @@ def blinkOnBoardPixel(color=BLINK_COLOR):
 # blink it once to show we here
 blinkOnBoardPixel()
 
-onboardStatus = False
+__onboardStatus = False
 def toggleOnBoardPixel():
-    global onboardStatus
+    global __onboardStatus
     if onBoardPixel:
         if onboardStatus:
             onBoardPixel.fill(Color.BLACK)
