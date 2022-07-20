@@ -10,6 +10,7 @@ import adafruit_led_animation.color as Color
 # local modules
 import onboard_neopixel
 import neotrellis_animations
+import neotrellis_midi
 
 keyColors = None
 keyAnimations = None
@@ -34,6 +35,9 @@ def setup_keypad(trellis):
         # set all keys to trigger the doKey() callback
         __trellis.callbacks[i] = doKey
 
+    # add midi module
+    neotrellis_midi.setup_midi()
+
     # --------------- Ready for Main Loop ------------
     # but first lets print out the key colors
     print("key colors", keyColors)
@@ -57,6 +61,7 @@ def doKey(event):
         __trellis.pixels.show()
         # blink onboard with same color
         onboard_neopixel.blinkOnBoardPixel(keyColors[event.number])
+        neotrellis_midi.send_noteOn(event.number)
 
     # start animationwhen a falling edge is detected
     elif event.edge == NeoTrellis.EDGE_FALLING:
@@ -67,4 +72,5 @@ def doKey(event):
         neotrellis_animations.set_animation_byIndex(event.number)
         neotrellis_animations.current_animation.resume()
         print("new animation", neotrellis_animations.current_animation)
+        neotrellis_midi.send_noteOff(event.number)
 
