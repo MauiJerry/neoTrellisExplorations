@@ -36,6 +36,7 @@ def setup_keypad(trellis):
         __trellis.callbacks[i] = doKey
 
     # add midi module
+    print("Callbacks set, enable midi")
     neotrellis_midi.setup_midi()
 
     # --------------- Ready for Main Loop ------------
@@ -61,7 +62,7 @@ def doKey(event):
         __trellis.pixels.show()
         # blink onboard with same color
         onboard_neopixel.blinkOnBoardPixel(keyColors[event.number])
-        neotrellis_midi.send_noteOn(event.number)
+        neotrellis_midi.send_note_on(event.number)
 
     # start animationwhen a falling edge is detected
     elif event.edge == NeoTrellis.EDGE_FALLING:
@@ -72,5 +73,5 @@ def doKey(event):
         neotrellis_animations.set_animation_byIndex(event.number)
         neotrellis_animations.current_animation.resume()
         print("new animation", neotrellis_animations.current_animation)
-        neotrellis_midi.send_noteOff(event.number)
+        neotrellis_midi.send_note_off(event.number)
 
