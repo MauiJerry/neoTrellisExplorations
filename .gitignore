@@ -9,6 +9,9 @@ __pycache__/
 # my personal way to hide old code
 archive/
 
+# idea ide folder
+.idea/
+
 # Distribution / packaging
 .Python
 build/

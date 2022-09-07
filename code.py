@@ -19,45 +19,5 @@ import supervisor
 supervisor.disable_autoreload()
 print("autoreload disabled")
 
-import time
-import board
-import busio
-from adafruit_neotrellis.neotrellis import NeoTrellis
 
-# local modules
-import onboard_neopixel
-import neotrellis_animations
-import neotrellis_keypad
-
-# setup single pixel strip if board has it, blink it once
-onboard_neopixel.setup_onboard_neopixel()
-
-# create the i2c object for the trellis
-# note the use of busio.I2C() instead of board.I2C()
-# apparently this is an issue for M4 (rPi Pico too?)
-i2c_bus = busio.I2C(board.SCL, board.SDA)
-trellis = NeoTrellis(i2c_bus)
-
-# setup animation and keypad modules
-neotrellis_animations.setup_animations(trellis)
-neotrellis_keypad.setup_keypad(trellis)
-
-print("Setup Complete enter forever loop ", neotrellis_animations.current_animation)
-
-i = 0
-while True:
-    # tell animation to update
-    neotrellis_animations.current_animation.animate()
-    # call the sync function call any triggered callbacks
-    trellis.sync()
-    # the trellis can only be read every 17 milliseconds or so
-    # really? the neopixel _getItem() could be an issue for i2c/seesaw connected neopixels
-    time.sleep(0.02)
-    # print out something so debug console watcher knows program is running
-    # also might give keyboard interrupt (Ctrl C) a chance to pause CircuitPython
-    i +=1
-    if i%50 == 0:
-        print(i, end='.')
-    if i%10000 == 0:
-        print(i, "reset")
-        i=0
+import code_NeotrellisExplorations

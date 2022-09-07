@@ -16,26 +16,26 @@ Adafruit NeoTrellis PCB
 Getting animations to run on the NeoTrellis turned out to be a bit difficult. The current release of adafruit_seesaw libary has its own version of NeoPixel class that does Not derive from PixelBuf, as do other versions. This precludes use of the rather nice adafruit_led_animations library.
 Neradoc on Adafruit's Discord quickly built a branch of seesaw that does derive from PixelBuf.  There isnt much testing yet but its a great advancement.
 
-TODO: refactoring code to module files
 
+examples/code_XX files are intended to run as code.py on CircuitPython device. they were tests leading to this
 
+code.py:
+	entry opened by CircuitPython, invokes other modules
 
-examples/code_ files are intended to run as code.py on CircuitPython device.
+code_NeotrellisExplorations.py:
+	what code.py imports to run everything
 
-code_neotrellis_example_m4.py: 
-	basic adafruit.neotrellis.example with mods to run a Feather M4. 
-	
-code_m4_onBoardNeoPixel.py:
-	example code to blink colors onboard the CircuitPython device (if available)
-	
-code_myAllAnimations.py:
-	adafruit_led_animations.examples modified for NeoTrellis and Feather M4
-	NOTE: requires branch version of adafruit_seesaw library to make seesaw.Neopixel work like adafruit_neopixel (derive from PixelBuf)
+onboard_neopixel.py:
+	set up on main board neopixel, if cpy board has it
+	blinks in colors on demand
 
-code_animKey.py
-	animations tied to keypad press
-	
-code_animKey_PixelMaps.py:
-	animations tied to keypad, 
-	adds row/column PixelMap animations
-	
+neotrellis_animations.py:
+	sets up animations from adafruit_led_animations
+	in an array to be invoked by keypad etc
+
+neotrellis_midi.py:
+	sets up midi with 16 note values to sendOn/Off
+
+neotrellis_keypad.py:
+	handles neotrellis keypad actions
+	starts animations, sends midi keyOn/Off
